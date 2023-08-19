@@ -1,0 +1,798 @@
+******carte VMC
+type: custom:mini-graph-card
+entities:
+  - sensor.lumi_lumi_weather_humidity
+show:
+  labels: true
+color_thresholds:
+  - value: 70
+    color: '#0cad00'
+  - value: 80
+    color: '#e66700'
+  - value: 90
+    color: '#FF0004'
+group_by: interval
+unit: '%'
+points_per_hour: 2
+hours_to_show: 48
+line_width: 2
+
+
+******carte conso PaC
+type: custom:mini-graph-card
+entities:
+  - sensor.elec3_cm180_85_62_instantaneous_power
+show:
+  labels: true
+group_by: interval
+unit: W
+name: PaC
+points_per_hour: 2
+hours_to_show: 48
+line_width: 2
+
+
+*****carte sécheresse
+
+type: custom:stack-in-card
+mode: vertical
+keep:
+  box_shadow: false
+  margin: false
+  border_radius: false
+  background: false
+  outer_padding: false
+cards:
+  - type: custom:mod-card
+    card_mod:
+      style:
+        .: |
+          :host {
+            --text-divider-color: rgb(68, 115, 158);
+            --text-divider-line-size: 1px;
+          }
+    card:
+      type: custom:text-divider-row
+      text: SÉCHERESSE
+      align: left
+  - type: custom:mod-card
+    card_mod:
+      style: |
+        ha-card {
+          margin: -15px -5px 0px -5px;
+        }  
+    card:
+      type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          entity: sensor.alert_level_in_colomiers
+          name: 'Vigieau Hte Garonne:'
+          layout: icon_name_state2nd
+          color_type: icon
+          show_name: true
+          show_state: true
+          state:
+            - value: Vigilance
+              operator: '=='
+              color: green
+              icon: mdi:water-check
+              styles:
+                state:
+                  - color: green
+            - value: Alerte
+              operator: '=='
+              color: yellow
+              icon: mdi:water-alert
+              styles:
+                state:
+                  - color: yellow
+            - value: Alerte renforcée
+              operator: '=='
+              color: orange
+              icon: mdi:water-remove
+              styles:
+                state:
+                  - color: orange
+            - value: Crise
+              operator: '=='
+              color: red
+              icon: mdi:water-off
+              styles:
+                state:
+                  - color: red
+          size: 55%
+          styles:
+            card:
+              - '--mdc-ripple-color': rgb(68, 115, 158)
+              - '--mdc-ripple-press-opacity': 0.5
+            name:
+              - font-size: 15px
+            state:
+              - font-weight: bold
+              - font-size: 15px
+          card_mod:
+            style: |
+              ha-card {
+                border: none;
+              }
+        - type: custom:bar-card
+          entities:
+            - entity: sensor.alert_level_in_colomiers
+              name: Niveau
+              icon: mdi:alert-circle
+              height: 47px
+              color: red
+              positions:
+                indicator: 'off'
+                icon: 'off'
+              severity:
+                - text: Vigilance
+                  color: green
+                - text: Alerte
+                  color: yellow
+                - text: Alerte renforcée
+                  color: orange
+                - text: Crise
+                  color: red
+          card_mod:
+            style: >
+              bar-card-currentbar, bar-card-backgroundbar {
+                border-radius: 25px;
+              }
+
+              #states > bar-card-row > bar-card-card > bar-card-background >
+              bar-card-contentbar > bar-card-name {
+                font-size: 16px;
+              }  ha-card {
+                margin-top: -2px;
+                background: none;
+                border: none;
+              }
+  - type: conditional
+    conditions:
+      - entity: sensor.alert_level_in_colomiers
+        state_not: Vigilance
+    card:
+      type: custom:mod-card
+      card_mod:
+        style: |
+          ha-card {
+            margin: 5px 5px 5px 5px;
+          }
+      card:
+        type: custom:auto-entities
+        card:
+          type: grid
+          columns: 5
+          square: true
+        card_param: cards
+        filter:
+          include:
+            - entity_id: sensor.*_restrictions_colomiers
+              options:
+                type: custom:button-card
+                color_type: icon
+                aspect_ratio: 1/1
+                show_name: true
+                show_state: true
+                name: |
+                  [[[
+                    return entity.attributes.friendly_name
+                  ]]]
+                styles:
+                  card:
+                    - '--mdc-ripple-color': rgb(68, 115, 158)
+                    - '--mdc-ripple-press-opacity': 0.5
+                    - border-radius: 8px
+                  name:
+                    - font-size: 11px
+                    - white-space: normal
+                  state:
+                    - font-weight: bold
+                    - font-size: 10px
+                    - white-space: normal
+                state:
+                  - value: Aucune restriction
+                    operator: '=='
+                    color: green
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px green
+                      state:
+                        - color: green
+                  - value: Interdiction sauf exception
+                    operator: '=='
+                    color: orange
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px orange
+                      state:
+                        - color: orange
+                  - value: Interdiction
+                    operator: '=='
+                    color: red
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px red
+                      state:
+                        - color: red
+                  - value: Interdiction sur plage horaire
+                    operator: '=='
+                    color: orange
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px orange
+                      state:
+                        - color: orange
+                size: 50%
+          exclude:
+            - entity_id: sensor.*_restrictions_colomiers
+              state: Aucune restriction
+        sort:
+          method: name
+          reverse: false
+
+
+
+*****Carte pollens
+
+type: custom:stack-in-card
+mode: vertical
+keep:
+  box_shadow: true
+  margin: false
+  border_radius: true
+  background: false
+  outer_padding: false
+cards:
+  - type: custom:mod-card
+    card_mod:
+      style:
+        .: |
+          :host {
+            --text-divider-color: rgb(68, 115, 158);
+            --text-divider-line-size: 1px;
+          }
+    card:
+      type: custom:text-divider-row
+      text: POLLENS
+      align: left
+  - type: custom:mod-card
+    card_mod:
+      style: |
+        ha-card {
+          margin: -15px -5px 0px -5px;
+        }  
+    card:
+      type: horizontal-stack
+      cards:
+        - type: custom:button-card
+          entity: sensor.pollens_31
+          name: 'Pollens Hte Garonne:'
+          icon: mdi:alert-decagram-outline
+          layout: icon_name_state2nd
+          color_type: icon
+          show_name: true
+          show_state: true
+          state:
+            - value: nul
+              operator: '=='
+              color: black
+              icon: mdi:decagram-outline
+              styles:
+                state:
+                  - color: black
+            - value: faible
+              operator: '=='
+              color: green
+              icon: mdi:check-decagram-outline
+              styles:
+                state:
+                  - color: green
+            - value: moyen
+              operator: '=='
+              color: orange
+              icon: mdi:alert-decagram-outline
+              styles:
+                state:
+                  - color: orange
+            - value: élevé
+              operator: '=='
+              color: red
+              icon: mdi:alert-decagram
+              styles:
+                state:
+                  - color: red
+          size: 55%
+          styles:
+            card:
+              - '--mdc-ripple-color': rgb(68, 115, 158)
+              - '--mdc-ripple-press-opacity': 0.5
+            name:
+              - font-size: 16px
+            state:
+              - font-weight: bold
+              - font-size: 16px
+        - type: custom:bar-card
+          entities:
+            - entity: sensor.pollens_31_risklevel
+              name: Risque Pollen
+              icon: mdi:alert-circle
+              height: 47px
+              color: red
+              min: 0
+              max: 4
+              positions:
+                indicator: 'off'
+                icon: 'off'
+              severity:
+                - color: Red
+                  from: 2
+                  to: 3
+                - color: Orange
+                  from: 1
+                  to: 2
+                - color: Green
+                  from: 0
+                  to: 1
+          card_mod:
+            style: >
+              bar-card-currentbar, bar-card-backgroundbar {
+                border-radius: 25px;
+              }
+
+              #states > bar-card-row > bar-card-card > bar-card-background >
+              bar-card-contentbar > bar-card-name {
+                font-size: 16px;
+
+              }  ha-card {
+                margin-top: -2px;
+                background: none;
+                border: none;
+              }
+  - type: conditional
+    conditions:
+      - entity: sensor.pollens_31
+        state_not: nul
+    card:
+      type: custom:mod-card
+      card_mod:
+        style: |
+          ha-card {
+            margin: 5px 5px 5px 5px;
+          }
+      card:
+        type: custom:auto-entities
+        card:
+          type: grid
+          columns: 5
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - entity_id: sensor.pollens_31_*
+              options:
+                type: custom:button-card
+                color_type: icon
+                aspect_ratio: 1/1
+                show_name: true
+                show_state: true
+                name: |
+                  [[[
+                    return entity.attributes.pollen_name + ":"
+                  ]]]
+                styles:
+                  card:
+                    - '--mdc-ripple-color': rgb(68, 115, 158)
+                    - '--mdc-ripple-press-opacity': 0.5
+                    - border-radius: 8px
+                  name:
+                    - font-size: 14px
+                  state:
+                    - font-weight: bold
+                    - font-size: 12px
+                state:
+                  - value: faible
+                    operator: '=='
+                    color: green
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px green
+                      state:
+                        - color: green
+                  - value: moyen
+                    operator: '=='
+                    color: orange
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px orange
+                      state:
+                        - color: orange
+                  - value: élevé
+                    operator: '=='
+                    color: red
+                    styles:
+                      card:
+                        - box-shadow: 0px 0px 0px 2px red
+                      state:
+                        - color: red
+                size: 50%
+          exclude:
+            - entity_id: sensor.pollens_31_*
+              state: nul
+            - entity_id: sensor.pollens_31
+            - entity_id: sensor.pollens_31_risklevel
+        sort:
+          method: name
+          reverse: false
+
+
+********Carte portails
+
+square: false
+columns: 3
+type: grid
+title: Ouvrants exterieurs
+cards:
+  - show_name: true
+    show_icon: true
+    type: button
+    show_state: false
+    icon: mdi:gate
+    name: Portail
+    tap_action:
+      action: none
+    hold_action:
+      action: call-service
+      service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_garage_sonoff_4ch_relay_3
+      data: {}
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: none
+    show_state: false
+    icon: mdi:garage-alert-variant
+    name: Garage DS
+    hold_action:
+      action: call-service
+      service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_garage_sonoff_4ch_relay_1
+      data: {}
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: none
+    show_state: false
+    icon: mdi:garage-alert-variant
+    name: Garage Mini
+    hold_action:
+      action: call-service
+      service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_garage_sonoff_4ch_relay_2
+      data: {}
+
+
+******* Carte volets
+
+square: false
+columns: 3
+type: grid
+title: Volets
+cards:
+  - show_name: true
+    show_icon: true
+    type: button
+    show_state: false
+    icon: mdi:window-shutter-open
+    name: Ouverture
+    tap_action:
+      action: call-service
+      service: script.ouverture_auto
+      target: {}
+    hold_action:
+      action: none
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: script.fermeture_auto
+      target: {}
+    show_state: false
+    icon: mdi:window-shutter
+    name: Fermeture
+    hold_action:
+      action: none
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: script.pare_soleil
+      target: {}
+    show_state: false
+    icon: mdi:window-shutter-alert
+    name: Pare soleil
+    hold_action:
+      action: none
+
+
+****Carte eclairage EXT
+
+type: entities
+entities:
+  - entity: switch.sonoff_garage_sonoff_4ch_relay_4
+  - entity: binary_sensor.sonoff_garage_sonoff_4ch_status
+show_header_toggle: false
+title: Eclairage extérieur
+
+
+*****Carte automatismes
+
+type: entities
+entities:
+  - entity: input_boolean.voets_auto
+  - entity: input_boolean.vacances
+  - entity: input_boolean.je_dors
+  - entity: input_boolean.canicule
+  - entity: input_boolean.absence
+  - entity: input_boolean.arrosage_auto
+title: Automatismes
+show_header_toggle: false
+state_color: true
+
+
+***** Carte Hackeron
+
+type: entities
+entities:
+  - entity: light.eclairage_piscine
+  - entity: binary_sensor.switch1
+  - entity: sensor.elx
+  - entity: sensor.alarme
+show_header_toggle: false
+
+
+******Carte T° piscine
+
+type: custom:mini-graph-card
+entities:
+  - color: blue
+    entity: sensor.water_temp
+    name: Eau
+extrema: true
+labels: true
+icon: null
+name: Piscine
+line_width: 2
+points: true
+show: null
+points_per_hour: 5
+
+*****Carte REDOX
+
+type: custom:mini-graph-card
+entities:
+  - color: red
+    entity: sensor.redox
+color_thresholds:
+  - value: 600
+    color: '#2D7200'
+  - value: 500
+    color: '#FFFF00'
+  - value: 700
+    color: '#F700D6'
+extrema: true
+labels: true
+icon: null
+line_width: 2
+points: true
+show: null
+points_per_hour: 5
+
+******Carte PH
+
+type: custom:mini-graph-card
+entities:
+  - sensor.ph
+show:
+  labels: true
+color_thresholds:
+  - value: 8
+    color: red
+  - value: 7.3
+    color: '#FFAA00'
+  - value: 7.1
+    color: '#7FFF00'
+  - value: 6.7
+    color: '#FFAA00'
+  - value: 6.5
+    color: red
+group_by: interval
+points_per_hour: 5
+hours_to_show: 48
+line_width: 2
+
+
+*****Carte simplifiée piscine
+
+type: custom:pool-monitor-card
+compact: true
+show_last_update: true
+language: fr
+show_label: true
+temperature: sensor.water_temp
+temperature_step: 2
+ph: sensor.ph
+ph_setpoint: 7.1
+salinity: sensor.sel
+salinity_setpoint: 4
+salinity_step: 1
+salinity_unit: g/l
+
+
+*****Carte CAM piscine
+
+show_state: true
+show_name: true
+camera_view: auto
+type: picture-entity
+entity: camera.cam_piscine_friendly_name
+
+
+***** Carte conso T° piscine
+
+type: custom:mini-graph-card
+entities:
+  - color: violet
+    entity: sensor.wattmetre_am2301_temperature
+    name: Local
+  - color: yellow
+    entity: sensor.wattmetre_energy_power
+    y_axis: secondary
+    name: Pompe
+extrema: true
+labels: true
+icon: null
+name: Piscine
+line_width: 2
+points: true
+show: null
+points_per_hour: 5
+
+
+***** Carte volets
+
+type: custom:shutter-card
+entities:
+  - entity: cover.volet_elie_4
+    name: Elie
+    buttons_position: left
+    title position: top
+  - entity: cover.volet_nael_3
+    name: Nael
+    buttons_position: left
+    title position: top
+  - entity: cover.volet_entree_5
+    name: Entrée
+    buttons_position: left
+    title position: top
+  - entity: cover.volet_piscine
+    name: Piscine
+    buttons_position: left
+    title position: top
+  - entity: cover.volet_rue_2
+    name: Rue
+    buttons_position: left
+    title position: top
+
+
+*****Carte T°1
+
+type: horizontal-stack
+cards:
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.lumi_lumi_weather_temperature
+    line_color: '#18929a'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: Elie
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.lumi_lumi_weather_temperature_5
+    line_color: '#F49600'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: Nael
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.lumi_lumi_weather_temperature_4
+    line_color: '#7a00a3'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: SaM
+
+
+***** Carte T°2
+
+type: horizontal-stack
+cards:
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.lumi_lumi_weather_temperature_3
+    line_color: '#8f3c00'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: Cuisine
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.lumi_lumi_weather_temperature_2
+    line_color: '#d1ab00'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: SdB
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.chambre_haut_temperature
+    line_color: '#0b8000'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: Etage
+
+*****Carte T° 3
+
+type: horizontal-stack
+cards:
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.compteur_eau_tdeg_1
+    line_color: '#18929a'
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: Buanderie
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.colomiers_temperature
+    line_color: pink
+    icon: mdi:thermometer
+    line_width: 2
+    font_size: 75
+    unit: °C
+    name: Extérieur
+    height: 100
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.compteur_eau_tdeg_2
+      - sensor.compteur_eau_tdeg_3
+    name: PaC
+    line_width: 5
+    font_size: 75
+    unit: °C
+    show:
+      legend: false
+      label: true
+      value_secondary: true
+
+
+
